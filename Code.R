@@ -1,1 +1,2 @@
 summary(mtcars)
+dim(mtcars)
