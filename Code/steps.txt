@@ -1,0 +1,50 @@
+She didnt send much, but I was able to make it out from the paper. We require the data set, although I applied online too
+
+they made changes to the data, show the data to Dr. feaster and ask 
+For all items (except marriage status and number of
+children), ratings from both mother and father were included. Separate mother and father ratings
+were included due to inconsistent responses. If items required consistency in order to be valid (e.g.
+whether the couple was married, number of children), inconsistent responses were set to missing.
+
+
+
+PITE_i = Yi | T=1 - Yi |T=0
+
+Yi|T=0 is the randomly generated data while Yi|T=1 is the estimated value by imputation and RF
+
+they assign each individual's estimated value to either treatment or control, and assume this individual's counterfactual outcome is missing. this missing is calculated using imputation and finally PITE is calculated 
+
+doing a monte carlo simulation to get variability (stability) of point estimates across multiple repetitions.
+
+A total of N =4 10,000 independent and identically distributed cases were generated
+
+
+#FUNCTION TO GENERATE ONE SIM#
+dataGen=function(N,p,seed){
+ set.seed(2398)
+
+#Binary covariates generated from a random binomial distribution with the probability of endorsement equal to .5 were used to resemble the design of the data in the motivating example, which included only categorical predictors. No modifications would be necessary to extend to continuous predictors.
+ 
+ X=rbinom(N*p,1,.5)
+
+ df=data.frame(matrix(X,nrow=N,ncol=p))
+ df$obs.txt=rep(0:1,N/2)
+
+#The true
+treatment effect for each individual was linearly related to a set of seven binary baseline covariates
+
+ df$TE=-1.3*df$X1-1.2*df$X2-.6*df$X3+.3*df$X4+.5*df$X5+1.1*df$X6+1.2*df$X7
+
+ seed=set.seed(seed)
+
+#The true observed y value under control
+ df$y.obs.control=rnorm(N,0,1)#observed y value under control
+
+#observed y value under TX
+ df$y.obs.tx= ifelse(df$obs.txt==1, (df$y.obs.control + df$TE),NA) 
+
+ df$Y=ifelse(df$obs.txt==0,df$y.obs.control,df$y.obs.tx) #observed Y value
+ df$y.obs.control=ifelse(df$obs.txt==0,df$y.obs.control,NA) #observed y value under control
+ df$ob=rep(0:1,each=N/2)
+ df$sim=rep(length(seed),each=N)
+ return(df)}
